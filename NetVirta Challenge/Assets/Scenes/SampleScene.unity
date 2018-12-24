@@ -353,9 +353,9 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
-  m_FillOrigin: 0
+  m_FillOrigin: 2
 --- !u!222 &325022066
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -564,9 +564,11 @@ MonoBehaviour:
   start: {fileID: 0}
   m_CheckPointPrefab: {fileID: 1183684591279760, guid: 4aa9ffabc9ed43542aba89a433fb8be1,
     type: 2}
+  m_ScanningBar: {fileID: 325022065}
   m_Radius: 0.5
   m_NumberOfCheckPoints: 20
   m_CheckPoints: []
+  tracedCP: -1
 --- !u!4 &737061907
 Transform:
   m_ObjectHideFlags: 0

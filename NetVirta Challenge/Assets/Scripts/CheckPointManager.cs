@@ -8,11 +8,14 @@ public class CheckPointManager : MonoBehaviour {
 
     public Tracking start;
     public GameObject m_CheckPointPrefab;
+    public UnityEngine.UI.Image m_ScanningBar;
 
     [Header("Debug")]
     public float m_Radius;
     public uint m_NumberOfCheckPoints;
-    public List<GameObject> m_CheckPoints;
+    public List<GameObject> m_CheckPoints = new List<GameObject>();
+    private List<bool> m_ScannedList = new List<bool>();
+    public int tracedCP = -1;
 
     //Awake is always called before any Start functions
     void Awake()
@@ -39,23 +42,6 @@ public class CheckPointManager : MonoBehaviour {
         // report start point
         start = obj;
 
-        /*  For a circle with origin (j, k) and radius r:
-
-            x(t) = r cos(t) + j
-            y(t) = r sin(t) + k
-
-            where you need to run this equation for t taking values within the range from 0 to 360, then you will get your x and y each on the boundary of the circle.
-         */
-
-        // find intervals of circle
-        //uint interval = 360 / m_NumberOfCheckPoints;
-
-        //for(uint i = 0; i < 360; i += interval)
-        //{
-        //    GameObject cp = Instantiate(m_CheckPointPrefab, new Vector3(m_Radius * Mathf.Cos(i * Mathf.Deg2Rad) + start.position.x, start.position.y, m_Radius * Mathf.Sin(i * Mathf.Deg2Rad) + start.position.z), Quaternion.identity);
-        //    m_CheckPoints.Add(cp);
-        //}
-
         // Generate DOme of points
         /*
          *function sphere ( N:float,k:int):Vector3 {
@@ -76,7 +62,46 @@ public class CheckPointManager : MonoBehaviour {
             float r = Mathf.Sqrt(1 - y * y);
             float phi = i * inc;
             GameObject cp = Instantiate(m_CheckPointPrefab, new Vector3(r * Mathf.Cos(phi) + start.position.x, y + start.position.y, r * Mathf.Sin(phi) + start.position.z), Quaternion.identity);
+            cp.GetComponent<CheckPointObject>().m_ID = m_CheckPoints.Count;
             m_CheckPoints.Add(cp);
+            m_ScannedList.Add(false);
         }
+    }
+
+    public bool CheckScanStatus(int id)
+    {
+        return m_ScannedList[id];
+    }
+
+    public void OnScannedCheckPoint(int id)
+    {
+        m_ScannedList[id] = true;
+    }
+
+    public void UpdateScaningBar()
+    {
+        m_ScanningBar.fillAmount += 1 * Time.deltaTime;
+        
+    }
+
+    public void StopScanningBar()
+    {
+        m_ScanningBar.fillAmount = 0;
+    }
+
+    public void ReportRaytracedCP(int id)
+    {
+        tracedCP = id;
+    }
+
+    private void Update()
+    {
+        if(tracedCP != -1)
+        {
+            // traced a checkpoint
+            UpdateScaningBar();
+        }
+
+        //Debug.Log(m_ScanningBar.fillAmount);
     }
 }
