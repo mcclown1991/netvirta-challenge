@@ -13,7 +13,7 @@ public class CheckPointManager : MonoBehaviour {
     [Header("Debug")]
     public float m_Radius;
     public uint m_NumberOfCheckPoints;
-    public List<GameObject> m_CheckPoints = new List<GameObject>();
+    public List<CheckPointObject> m_CheckPoints = new List<CheckPointObject>();
     private List<bool> m_ScannedList = new List<bool>();
     public int tracedCP = -1;
 
@@ -40,6 +40,14 @@ public class CheckPointManager : MonoBehaviour {
     {
         Debug.Log("Reported trackable");
         // report start point
+        if (start != null)
+        {
+            foreach(CheckPointObject cp in m_CheckPoints)
+            {
+                cp.gameObject.SetActive(true);
+            }
+            return;
+        }
         start = obj;
 
         // Generate DOme of points
@@ -61,10 +69,20 @@ public class CheckPointManager : MonoBehaviour {
             float y = i * (off / 2);
             float r = Mathf.Sqrt(1 - y * y);
             float phi = i * inc;
-            GameObject cp = Instantiate(m_CheckPointPrefab, new Vector3(r * Mathf.Cos(phi) + start.position.x, y + start.position.y, r * Mathf.Sin(phi) + start.position.z), Quaternion.identity);
-            cp.GetComponent<CheckPointObject>().m_ID = m_CheckPoints.Count;
-            m_CheckPoints.Add(cp);
+            GameObject cp = Instantiate(m_CheckPointPrefab, new Vector3(r * Mathf.Cos(phi), y, r * Mathf.Sin(phi)), Quaternion.identity);
+            CheckPointObject cpobj = cp.GetComponent<CheckPointObject>();
+            cpobj.m_ID = m_CheckPoints.Count;
+            m_CheckPoints.Add(cpobj);
             m_ScannedList.Add(false);
+        }
+    }
+
+    public void LostTrackingObject()
+    {
+        foreach(CheckPointObject obj in m_CheckPoints)
+        {
+            if(obj != null)
+            obj.gameObject.SetActive(false);
         }
     }
 
@@ -81,6 +99,12 @@ public class CheckPointManager : MonoBehaviour {
     public void UpdateScaningBar()
     {
         m_ScanningBar.fillAmount += 1 * Time.deltaTime;
+        if(m_ScanningBar.fillAmount >= 1)
+        {
+            OnScannedCheckPoint(tracedCP);
+            m_CheckPoints[tracedCP].OnScanned();
+            m_ScanningBar.fillAmount = 0;
+        }
         
     }
 
@@ -99,6 +123,7 @@ public class CheckPointManager : MonoBehaviour {
         if(tracedCP != -1)
         {
             // traced a checkpoint
+            if(!m_ScannedList[tracedCP])
             UpdateScaningBar();
         }
 

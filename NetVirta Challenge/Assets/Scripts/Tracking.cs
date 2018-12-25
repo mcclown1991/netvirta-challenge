@@ -72,6 +72,7 @@ public class Tracking : MonoBehaviour, ITrackableEventHandler
         }
 
         Debug.Log("Trackable " + mTrackableBehaviour.TrackableName + " lost");
+        CheckPointManager.instance.LostTrackingObject();
     }
 
 }

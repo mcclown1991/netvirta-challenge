@@ -5,20 +5,27 @@ using UnityEngine;
 public class CheckPointObject : MonoBehaviour {
 
     public int m_ID;
-    public bool m_Scanning;
-
-	public void OnRayHit()
+    public float m_Size;
+    
+    public void OnScanned()
     {
-        Debug.Log("Ray Hit!");
-        if (!CheckPointManager.instance.CheckScanStatus(m_ID))
+        Renderer rend = GetComponent<Renderer>();
+
+        //Set the main Color of the Material to green
+        rend.material.color = Color.green;
+        m_Size = transform.localScale.x;
+
+        StartCoroutine(Shrink());
+    }
+
+    public IEnumerator Shrink()
+    {
+        while (m_Size > 0.1f)
         {
-            Debug.Log("Start scanning check point");
-            m_Scanning = true;
-        }
-        else
-        {
-            Debug.Log("Check point is done");
-            m_Scanning = false;
+            transform.localScale = new Vector3(m_Size, m_Size, m_Size);
+            m_Size -= 0.5f * Time.deltaTime;
+            yield return new WaitForSeconds(0.01f);
         }
     }
+    
 }
