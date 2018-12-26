@@ -6,6 +6,7 @@ public class CheckPointObject : MonoBehaviour {
 
     public int m_ID;
     public float m_Size;
+    public Trail m_TrailObject;
     
     public void OnScanned()
     {
@@ -26,6 +27,13 @@ public class CheckPointObject : MonoBehaviour {
             m_Size -= 0.5f * Time.deltaTime;
             yield return new WaitForSeconds(0.01f);
         }
+
+        m_TrailObject.Play(CheckPointManager.instance.GetNextCheckPointLoaction());
     }
     
+
+    public void StopTrail()
+    {
+        m_TrailObject.Stop();
+    }
 }

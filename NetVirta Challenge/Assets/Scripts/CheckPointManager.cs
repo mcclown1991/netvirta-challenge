@@ -16,6 +16,8 @@ public class CheckPointManager : MonoBehaviour {
     public List<CheckPointObject> m_CheckPoints = new List<CheckPointObject>();
     private List<bool> m_ScannedList = new List<bool>();
     public int tracedCP = -1;
+    public int prevCP = -1;
+    public int m_ScannedCount = 0;
 
     //Awake is always called before any Start functions
     void Awake()
@@ -69,14 +71,33 @@ public class CheckPointManager : MonoBehaviour {
             float y = i * (off / 2);
             float r = Mathf.Sqrt(1 - y * y);
             float phi = i * inc;
-            GameObject cp = Instantiate(m_CheckPointPrefab, new Vector3(r * Mathf.Cos(phi), y, r * Mathf.Sin(phi)), Quaternion.identity);
+            GameObject cp = Instantiate(m_CheckPointPrefab, new Vector3(Mathf.Cos(phi) * r * m_Radius, y * m_Radius, Mathf.Sin(phi) * r * m_Radius) , Quaternion.identity);
             CheckPointObject cpobj = cp.GetComponent<CheckPointObject>();
             cpobj.m_ID = m_CheckPoints.Count;
+            cp.SetActive(false);
             m_CheckPoints.Add(cpobj);
             m_ScannedList.Add(false);
         }
+
+        StartCoroutine(GenerateCheckPoints());
     }
 
+    /// <summary>
+    /// Shows the checkpoint in a sequence 
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator GenerateCheckPoints()
+    {
+        foreach(CheckPointObject obj in m_CheckPoints)
+        {
+            obj.gameObject.SetActive(true);
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    /// <summary>
+    /// The origin of the marker is lost, hide all objects
+    /// </summary>
     public void LostTrackingObject()
     {
         foreach(CheckPointObject obj in m_CheckPoints)
@@ -86,16 +107,30 @@ public class CheckPointManager : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Checks if a checkpoint is scanned
+    /// </summary>
+    /// <param name="id">id of the checkpoint</param>
+    /// <returns>status of the checkpoint</returns>
     public bool CheckScanStatus(int id)
     {
         return m_ScannedList[id];
     }
 
+    /// <summary>
+    /// Calls when a checkpoint is successfully scanned
+    /// </summary>
+    /// <param name="id"></param>
     public void OnScannedCheckPoint(int id)
     {
         m_ScannedList[id] = true;
+        if (prevCP != -1) m_CheckPoints[prevCP].StopTrail();
+        ++m_ScannedCount;
     }
 
+    /// <summary>
+    /// This function updates the circle for indicating scanning progress
+    /// </summary>
     public void UpdateScaningBar()
     {
         m_ScanningBar.fillAmount += 1 * Time.deltaTime;
@@ -104,15 +139,23 @@ public class CheckPointManager : MonoBehaviour {
             OnScannedCheckPoint(tracedCP);
             m_CheckPoints[tracedCP].OnScanned();
             m_ScanningBar.fillAmount = 0;
+            prevCP = tracedCP;
         }
         
     }
 
+    /// <summary>
+    /// Resets the scanning progress bar
+    /// </summary>
     public void StopScanningBar()
     {
         m_ScanningBar.fillAmount = 0;
     }
 
+    /// <summary>
+    /// report the Raytrace result
+    /// </summary>
+    /// <param name="id"></param>
     public void ReportRaytracedCP(int id)
     {
         tracedCP = id;
@@ -126,7 +169,31 @@ public class CheckPointManager : MonoBehaviour {
             if(!m_ScannedList[tracedCP])
             UpdateScaningBar();
         }
+    }
 
-        //Debug.Log(m_ScanningBar.fillAmount);
+    /// <summary>
+    /// find the next checkpoint to scan with right movement first before left 
+    /// </summary>
+    /// <returns>position of the next checkpoint</returns>
+    public Vector3 GetNextCheckPointLoaction()
+    {
+        if (m_ScannedCount == m_NumberOfCheckPoints) return m_CheckPoints[prevCP].transform.position;
+        for(int i = prevCP + 1; i < m_CheckPoints.Count; ++i)
+        {
+            if (m_ScannedList[i] == false)
+            {
+                return m_CheckPoints[i].transform.position;
+            }
+        }
+        // if it reaches here there is no more next aval, search for previous
+        
+        for(int i = prevCP; i > 0; --i)
+        {
+            if (m_ScannedList[i] == false)
+                return m_CheckPoints[i].transform.position;
+        }
+
+        // this return is to prevent error in c#
+        return m_CheckPoints[prevCP].transform.position;
     }
 }

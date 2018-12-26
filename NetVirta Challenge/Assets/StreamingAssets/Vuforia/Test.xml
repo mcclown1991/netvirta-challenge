@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <QCARConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="qcar_config.xsd">
   <Tracking>
-    <ImageTarget name="Shizu" size="0.500000 0.666667" />
-    <ImageTarget name="Kanade" size="0.500000 0.666667" />
-    <ImageTarget name="card" size="0.800000 0.480267" />
+    <ImageTarget name="unity" size="1.000000 1.000000" />
   </Tracking>
 </QCARConfig>
