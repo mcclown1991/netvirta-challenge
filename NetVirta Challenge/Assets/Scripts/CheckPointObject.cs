@@ -33,8 +33,6 @@ public class CheckPointObject : MonoBehaviour {
         rend.material.color = Color.green;
         m_Size = transform.localScale.x;
 
-        
-
         StartCoroutine(Shrink());
     }
 

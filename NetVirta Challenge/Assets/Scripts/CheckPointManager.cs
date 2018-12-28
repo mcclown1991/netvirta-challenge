@@ -19,6 +19,7 @@ public class CheckPointManager : MonoBehaviour {
     public int prevCP = -1;
     public int m_ScannedCount = 0;
     public int pulseID;
+    private bool m_Lock = false;
 
     public Dictionary<int, List<int>> m_NeighbourList = new Dictionary<int, List<int>>();
 
@@ -161,10 +162,12 @@ public class CheckPointManager : MonoBehaviour {
         m_ScanningBar.fillAmount += 1 * Time.deltaTime;
         if(m_ScanningBar.fillAmount >= 1)
         {
+            m_Lock = true;
             OnScannedCheckPoint(tracedCP);
             m_CheckPoints[tracedCP].OnScanned();
             m_ScanningBar.fillAmount = 0;
             prevCP = tracedCP;
+            m_Lock = false;
         }
         
     }
@@ -199,7 +202,8 @@ public class CheckPointManager : MonoBehaviour {
     /// <param name="id"></param>
     public void ReportRaytracedCP(int id)
     {
-        tracedCP = id;
+        if(!m_Lock)
+            tracedCP = id;
     }
 
     private void Update()
@@ -269,6 +273,10 @@ public class CheckPointManager : MonoBehaviour {
         }
         else
         {
+            if (m_ScannedList[prevCP])
+            {
+                // scanned but lost tracking
+            }
             m_CheckPoints[pulseID].StartPulse();
         }
     }
