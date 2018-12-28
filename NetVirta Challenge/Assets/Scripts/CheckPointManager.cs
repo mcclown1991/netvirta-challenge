@@ -18,6 +18,9 @@ public class CheckPointManager : MonoBehaviour {
     public int tracedCP = -1;
     public int prevCP = -1;
     public int m_ScannedCount = 0;
+    public int pulseID;
+
+    public Dictionary<int, List<int>> m_NeighbourList = new Dictionary<int, List<int>>();
 
     //Awake is always called before any Start functions
     void Awake()
@@ -90,8 +93,30 @@ public class CheckPointManager : MonoBehaviour {
     {
         foreach(CheckPointObject obj in m_CheckPoints)
         {
+            // construct neighbour list based on distance
+            m_NeighbourList.Add(obj.m_ID, new List<int>());
+            // create a copy of all point
+            foreach (CheckPointObject cp in m_CheckPoints)
+            {
+                if(cp.m_ID != obj.m_ID)
+                    m_NeighbourList[obj.m_ID].Add(cp.m_ID);
+            }
+            // sort the list base on the distance
+            m_NeighbourList[obj.m_ID].Sort(delegate (int left, int right) 
+            {
+                float distanceA = Vector3.Distance(m_CheckPoints[obj.m_ID].transform.position, m_CheckPoints[left].transform.position);
+                float distanceB = Vector3.Distance(m_CheckPoints[obj.m_ID].transform.position, m_CheckPoints[right].transform.position);
+                return distanceA.CompareTo(distanceB);
+            }
+            );
+
             obj.gameObject.SetActive(true);
             yield return new WaitForSeconds(0.1f);
+        }
+
+        foreach (CheckPointObject obj in m_CheckPoints)
+        {
+            obj.StartPulse();
         }
     }
 
@@ -152,6 +177,22 @@ public class CheckPointManager : MonoBehaviour {
         m_ScanningBar.fillAmount = 0;
     }
 
+    public void StopPulse(int id)
+    {
+        if (id == -1)
+        {
+            // stop all
+            foreach(CheckPointObject obj in m_CheckPoints)
+            {
+                obj.StopPulse();
+            }
+        }
+        else
+        {
+            m_CheckPoints[id].StopPulse();
+        }
+    }
+
     /// <summary>
     /// report the Raytrace result
     /// </summary>
@@ -178,22 +219,57 @@ public class CheckPointManager : MonoBehaviour {
     public Vector3 GetNextCheckPointLoaction()
     {
         if (m_ScannedCount == m_NumberOfCheckPoints) return m_CheckPoints[prevCP].transform.position;
-        for(int i = prevCP + 1; i < m_CheckPoints.Count; ++i)
+
+        // query the neighbours to find next nearest point
+        foreach(int id in m_NeighbourList[prevCP])
         {
-            if (m_ScannedList[i] == false)
+            if (!m_ScannedList[id])
             {
-                return m_CheckPoints[i].transform.position;
+                StartPulseOnObject(id);
+                return m_CheckPoints[id].transform.position;
             }
         }
-        // if it reaches here there is no more next aval, search for previous
+
+        // defualt
+
+        //for (int i = prevCP + 1; i < m_CheckPoints.Count; ++i)
+        //{
+        //    if (m_ScannedList[i] == false)
+        //    {
+        //        return m_CheckPoints[i].transform.position;
+        //    }
+        //}
+        //// if it reaches here there is no more next aval, search for previous
         
-        for(int i = prevCP; i > 0; --i)
-        {
-            if (m_ScannedList[i] == false)
-                return m_CheckPoints[i].transform.position;
-        }
+        //for(int i = prevCP; i > 0; --i)
+        //{
+        //    if (m_ScannedList[i] == false)
+        //        return m_CheckPoints[i].transform.position;
+        //}
 
         // this return is to prevent error in c#
         return m_CheckPoints[prevCP].transform.position;
+    }
+
+    public void StartPulseOnObject(int id)
+    {
+        pulseID = id;
+        m_CheckPoints[id].StartPulse();
+    }
+
+    public void StartPulseOnLastObject()
+    {
+        if(prevCP == -1)
+        {
+            // pulse all
+            foreach(CheckPointObject cp in m_CheckPoints)
+            {
+                cp.StartPulse();
+            }
+        }
+        else
+        {
+            m_CheckPoints[pulseID].StartPulse();
+        }
     }
 }

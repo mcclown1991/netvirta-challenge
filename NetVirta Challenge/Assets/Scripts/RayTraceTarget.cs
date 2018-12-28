@@ -5,9 +5,10 @@ using UnityEngine;
 public class RayTraceTarget : MonoBehaviour {
 
     private int id = -1;
+    public float m_Deviation;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
 		
 	}
 	
@@ -18,6 +19,19 @@ public class RayTraceTarget : MonoBehaviour {
         {
             Debug.DrawRay(transform.position, transform.forward * hit.distance, Color.yellow);
             Debug.Log("Did Hit");
+            // check if camera is facing the origin
+            float rad = Vector3.Angle(transform.forward, Vector3.zero - transform.position.normalized);
+            if(rad > m_Deviation)
+            {
+                // object lost
+                id = -1;
+                CheckPointManager.instance.StopScanningBar();
+                Debug.Log("Camera orientation is not facing the marker");
+                CheckPointManager.instance.StartPulseOnLastObject();
+                CheckPointManager.instance.ReportRaytracedCP(-1);
+                return;
+            }
+
             CheckPointObject col = hit.transform.gameObject.GetComponent<CheckPointObject>();
             if (col != null)
             {
@@ -26,6 +40,7 @@ public class RayTraceTarget : MonoBehaviour {
                     id = col.m_ID;
                     CheckPointManager.instance.StopScanningBar();
                     Debug.Log("Stopped at ray 1");
+                    CheckPointManager.instance.StopPulse(-1);
                     CheckPointManager.instance.ReportRaytracedCP(col.m_ID);
                 }
                 else if(id == col.m_ID){
@@ -35,6 +50,7 @@ public class RayTraceTarget : MonoBehaviour {
                     // different object
                     CheckPointManager.instance.StopScanningBar();
                     Debug.Log("Stopped at ray 3");
+                    CheckPointManager.instance.StopPulse(id);
                     CheckPointManager.instance.ReportRaytracedCP(id);
                 }
                 
@@ -48,6 +64,7 @@ public class RayTraceTarget : MonoBehaviour {
                 id = -1;
                 CheckPointManager.instance.StopScanningBar();
                 Debug.Log("Stopped at no ray");
+                CheckPointManager.instance.StartPulseOnLastObject();
                 CheckPointManager.instance.ReportRaytracedCP(-1);
             }
         }

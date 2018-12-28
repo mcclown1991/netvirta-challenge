@@ -7,6 +7,23 @@ public class CheckPointObject : MonoBehaviour {
     public int m_ID;
     public float m_Size;
     public Trail m_TrailObject;
+    private bool m_IsPulse = false;
+
+    public void StartPulse()
+    {
+        if (m_IsPulse) return;
+        m_IsPulse = true;
+        StartCoroutine(PulseDown());
+    }
+
+    public void StopPulse()
+    {
+        StopAllCoroutines();
+
+        m_Size = 0.2f;
+        transform.localScale = new Vector3(m_Size, m_Size, m_Size);
+        m_IsPulse = false;
+    }
     
     public void OnScanned()
     {
@@ -15,6 +32,8 @@ public class CheckPointObject : MonoBehaviour {
         //Set the main Color of the Material to green
         rend.material.color = Color.green;
         m_Size = transform.localScale.x;
+
+        
 
         StartCoroutine(Shrink());
     }
@@ -35,5 +54,27 @@ public class CheckPointObject : MonoBehaviour {
     public void StopTrail()
     {
         m_TrailObject.Stop();
+    }
+
+    public IEnumerator PulseDown()
+    {
+        while(m_Size > 0.15f)
+        {
+            transform.localScale = new Vector3(m_Size, m_Size, m_Size);
+            m_Size -= 0.1f * Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+        StartCoroutine(PulseUp());
+    }
+
+    public IEnumerator PulseUp()
+    {
+        while(m_Size < 0.2f)
+        {
+            transform.localScale = new Vector3(m_Size, m_Size, m_Size);
+            m_Size += 2f * Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+        StartCoroutine(PulseDown());
     }
 }

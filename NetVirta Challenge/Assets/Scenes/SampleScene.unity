@@ -576,6 +576,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf751373bfa6cd24d8f5b08ff8f53aff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Deviation: 10
 --- !u!1 &325022063
 GameObject:
   m_ObjectHideFlags: 0
@@ -1013,7 +1014,7 @@ MonoBehaviour:
     type: 2}
   m_ScanningBar: {fileID: 325022065}
   m_Radius: 1
-  m_NumberOfCheckPoints: 25
+  m_NumberOfCheckPoints: 10
   m_CheckPoints: []
   tracedCP: -1
   prevCP: -1
