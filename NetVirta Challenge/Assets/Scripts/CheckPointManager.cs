@@ -9,6 +9,7 @@ public class CheckPointManager : MonoBehaviour {
     public Tracking start;
     public GameObject m_CheckPointPrefab;
     public UnityEngine.UI.Image m_ScanningBar;
+    public RayTraceTarget m_Camera;
 
     [Header("Debug")]
     public float m_Radius;
@@ -208,7 +209,12 @@ public class CheckPointManager : MonoBehaviour {
 
     private void Update()
     {
-        if(tracedCP != -1)
+        if (!m_Lock)
+        {
+            tracedCP = m_Camera.CastRay();
+        }
+
+        if (tracedCP != -1)
         {
             // traced a checkpoint
             if(!m_ScannedList[tracedCP])

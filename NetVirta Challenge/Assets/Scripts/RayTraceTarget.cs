@@ -13,7 +13,7 @@ public class RayTraceTarget : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	public int CastRay () {
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.forward, out hit, Mathf.Infinity))
         {
@@ -28,8 +28,7 @@ public class RayTraceTarget : MonoBehaviour {
                 CheckPointManager.instance.StopScanningBar();
                 Debug.Log("Camera orientation is not facing the marker");
                 CheckPointManager.instance.StartPulseOnLastObject();
-                CheckPointManager.instance.ReportRaytracedCP(-1);
-                return;
+                return -1;
             }
 
             CheckPointObject col = hit.transform.gameObject.GetComponent<CheckPointObject>();
@@ -41,17 +40,18 @@ public class RayTraceTarget : MonoBehaviour {
                     CheckPointManager.instance.StopScanningBar();
                     Debug.Log("Stopped at ray 1");
                     CheckPointManager.instance.StopPulse(-1);
-                    CheckPointManager.instance.ReportRaytracedCP(col.m_ID);
+                    return col.m_ID;
                 }
-                else if(id == col.m_ID){
-                    // same object
+                else if(col.m_ID == id)
+                {
+                    return id;
                 }
                 else{
                     // different object
                     CheckPointManager.instance.StopScanningBar();
                     Debug.Log("Stopped at ray 3");
                     CheckPointManager.instance.StopPulse(id);
-                    CheckPointManager.instance.ReportRaytracedCP(id);
+                    return id;
                 }
                 
             }
@@ -65,8 +65,10 @@ public class RayTraceTarget : MonoBehaviour {
                 CheckPointManager.instance.StopScanningBar();
                 Debug.Log("Stopped at no ray");
                 CheckPointManager.instance.StartPulseOnLastObject();
-                CheckPointManager.instance.ReportRaytracedCP(-1);
+                return -1;
             }
         }
+
+        return -1;
     }
 }

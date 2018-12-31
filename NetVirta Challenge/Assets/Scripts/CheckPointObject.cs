@@ -8,6 +8,7 @@ public class CheckPointObject : MonoBehaviour {
     public float m_Size;
     public Trail m_TrailObject;
     private bool m_IsPulse = false;
+    private float m_Delay = 0.2f;
 
     public void StartPulse()
     {
@@ -33,6 +34,14 @@ public class CheckPointObject : MonoBehaviour {
         rend.material.color = Color.green;
         m_Size = transform.localScale.x;
 
+        GetComponent<Collider>().enabled = false;
+
+        StartCoroutine(StartShrink());
+    }
+
+    public IEnumerator StartShrink()
+    {
+        yield return new WaitForSeconds(m_Delay);
         StartCoroutine(Shrink());
     }
 
